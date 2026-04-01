@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Attribute + values used by a variant test product -->
+    <record id="product_attribute_notify_size" model="product.attribute">
+        <field name="name">Notify Size</field>
+        <field name="display_type">radio</field>
+        <field name="create_variant">always</field>
+    </record>
+
+    <record id="product_attribute_value_notify_size_s" model="product.attribute.value">
+        <field name="name">Small</field>
+        <field name="attribute_id" ref="product_attribute_notify_size"/>
+    </record>
+
+    <record id="product_attribute_value_notify_size_l" model="product.attribute.value">
+        <field name="name">Large</field>
+        <field name="attribute_id" ref="product_attribute_notify_size"/>
+    </record>
+
+    <!-- Out-of-stock product: Notify button should appear -->
+    <record id="product_template_notify_oos" model="product.template">
+        <field name="name">Demo Notify Sofa - Out Of Stock</field>
+        <field name="detailed_type">product</field>
+        <field name="list_price">1200.0</field>
+        <field name="website_published" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="allow_out_of_stock_order" eval="False"/>
+        <field name="default_code">DEMO-NOTIFY-OOS</field>
+    </record>
+
+    <!-- In-stock product: Notify button should be hidden -->
+    <record id="product_template_notify_in_stock" model="product.template">
+        <field name="name">Demo Notify Sofa - In Stock</field>
+        <field name="detailed_type">product</field>
+        <field name="list_price">1300.0</field>
+        <field name="website_published" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="allow_out_of_stock_order" eval="False"/>
+        <field name="default_code">DEMO-NOTIFY-INSTOCK</field>
+    </record>
+
+    <!-- Out-of-stock but backorder allowed: Notify button should be hidden -->
+    <record id="product_template_notify_backorder_allowed" model="product.template">
+        <field name="name">Demo Notify Chair - Backorder Allowed</field>
+        <field name="detailed_type">product</field>
+        <field name="list_price">450.0</field>
+        <field name="website_published" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="allow_out_of_stock_order" eval="True"/>
+        <field name="default_code">DEMO-NOTIFY-BACKORDER</field>
+    </record>
+
+    <!-- Variant product: useful for variant-level stock scenarios -->
+    <record id="product_template_notify_variant" model="product.template">
+        <field name="name">Demo Notify Table - Variant Product</field>
+        <field name="detailed_type">product</field>
+        <field name="list_price">800.0</field>
+        <field name="website_published" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="allow_out_of_stock_order" eval="False"/>
+        <field name="attribute_line_ids" eval="[(0, 0, {
+            'attribute_id': ref('product_attribute_notify_size'),
+            'value_ids': [(6, 0, [
+                ref('product_attribute_value_notify_size_s'),
+                ref('product_attribute_value_notify_size_l')
+            ])]
+        })]"/>
+    </record>
+
+    <!-- Stock setup -->
+    <!-- Out-of-stock product intentionally has no stock.quant -->
+
+    <record id="stock_quant_notify_in_stock" model="stock.quant">
+        <field name="product_id" search="[('product_tmpl_id', '=', ref('product_template_notify_in_stock'))]"/>
+        <field name="location_id" ref="stock.stock_location_stock"/>
+        <field name="quantity" eval="25.0"/>
+    </record>
+
+    <!-- Keep backorder-allowed product out of stock, no quant created -->
+
+    <!-- One variant gets stock; the other remains out of stock -->
+    <record id="stock_quant_notify_variant_large_in_stock" model="stock.quant">
+        <field name="product_id" search="[('product_tmpl_id', '=', ref('product_template_notify_variant')), ('display_name', 'ilike', 'Large')]"/>
+        <field name="location_id" ref="stock.stock_location_stock"/>
+        <field name="quantity" eval="7.0"/>
+    </record>
+
+    <!-- Demo notification requests -->
+    <record id="stock_notify_request_pending_oos" model="product.stock.notification.request">
+        <field name="product_id" search="[('product_tmpl_id', '=', ref('product_template_notify_oos'))]"/>
+        <field name="email">pending.demo@example.com</field>
+        <field name="email_normalized">pending.demo@example.com</field>
+        <field name="requested_qty" eval="2.0"/>
+        <field name="state">pending</field>
+    </record>
+
+    <record id="stock_notify_request_sent_in_stock" model="product.stock.notification.request">
+        <field name="product_id" search="[('product_tmpl_id', '=', ref('product_template_notify_in_stock'))]"/>
+        <field name="email">sent.demo@example.com</field>
+        <field name="email_normalized">sent.demo@example.com</field>
+        <field name="requested_qty" eval="1.0"/>
+        <field name="state">sent</field>
+        <field name="sent_date" eval="DateTime.now()"/>
+    </record>
+</odoo>

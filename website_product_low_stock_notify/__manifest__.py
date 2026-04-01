@@ -14,6 +14,9 @@
         "views/stock_notification_request_views.xml",
         "views/menu.xml"
     ],
+    "demo": [
+        "demo/stock_notify_demo.xml"
+    ],
     "installable": True,
     "application": False,
 }
