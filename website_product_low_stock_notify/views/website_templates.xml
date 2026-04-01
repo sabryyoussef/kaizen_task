@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <template id="website_sale_product_notify_button" inherit_id="website_sale.product" name="Low stock notify button">
-        <xpath expr="//section[contains(@class, 'oe_website_sale')]" position="inside">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
             <t t-if="request and request.params.get('stock_notify_status')">
-                <div class="container mt-3">
+                <div class="mt-3">
                     <div
                         t-attf-class="alert #{'alert-success' if request.params.get('stock_notify_status') == 'success' else 'alert-danger'}"
                         role="alert"
@@ -12,8 +12,6 @@
                     </div>
                 </div>
             </t>
-        </xpath>
-        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
             <t t-set="current_variant" t-value="product.product_variant_id"/>
             <t t-if="current_variant and current_variant.qty_available &lt;= 0 and not product.allow_out_of_stock_order">
                 <div class="mt-2">
