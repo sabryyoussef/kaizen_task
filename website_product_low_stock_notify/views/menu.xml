@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_stock_notification_root" name="Stock Notifications" sequence="80"/>
+    <menuitem
+        id="menu_stock_notification_requests"
+        name="Requests"
+        parent="menu_stock_notification_root"
+        action="action_product_stock_notification_request"
+        sequence="10"
+    />
+</odoo>

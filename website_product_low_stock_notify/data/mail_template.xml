@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="mail_template_product_back_in_stock" model="mail.template">
+        <field name="name">Product Back In Stock Notification</field>
+        <field name="model_id" ref="model_product_stock_notification_request"/>
+        <field name="subject">${object.product_id.display_name} is back in stock</field>
+        <field name="email_to">${object.email}</field>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello,</p>
+                <p>
+                    <strong>${object.product_id.display_name}</strong> is now back in stock.
+                </p>
+                <p>
+                    Current stock: <strong>${object.product_id.qty_available}</strong>
+                </p>
+                <p>
+                    <a href="${object.get_product_url()}" style="display:inline-block;padding:10px 16px;background:#0d6efd;color:#ffffff;text-decoration:none;border-radius:4px;">
+                        View Product
+                    </a>
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>
