@@ -134,3 +134,44 @@ class ProductStockNotificationRequest(models.Model):
                     "Failed to send back-in-stock email for notification request %s",
                     notification.id,
                 )
+
+    @api.model
+    def _trigger_notifications_for_products(self, product_ids):
+        """Trigger notifications for specific products that are now in stock.
+        Called by stock.quant when stock levels change from 0 to positive."""
+        if not product_ids:
+            return
+        
+        template = self.env.ref(
+            "website_product_low_stock_notify.mail_template_product_back_in_stock",
+            raise_if_not_found=False,
+        )
+        
+        # Find pending requests for these products
+        pending_requests = self.search([
+            ("state", "=", "pending"),
+            ("product_id", "in", product_ids)
+        ])
+        
+        for notification in pending_requests:
+            # Double-check product is actually in stock
+            if notification.product_id.qty_available <= 0:
+                continue
+            
+            try:
+                if template:
+                    template.send_mail(notification.id, force_send=True)
+                notification.write({
+                    "state": "sent",
+                    "sent_date": fields.Datetime.now(),
+                })
+                _logger.info(
+                    "Sent stock notification for product %s to %s",
+                    notification.product_id.display_name,
+                    notification.email
+                )
+            except Exception:
+                _logger.exception(
+                    "Failed to send back-in-stock email for notification request %s",
+                    notification.id,
+                )

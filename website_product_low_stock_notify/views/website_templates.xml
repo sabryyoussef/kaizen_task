@@ -2,17 +2,25 @@
 <odoo>
     <template id="website_sale_product_notify_button" inherit_id="website_sale.product" name="Low stock notify button">
         <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+            <!-- Success/Error Alert Messages -->
             <t t-if="request and request.params.get('stock_notify_status')">
-                <div class="mt-3">
+                <div class="mt-3 alert-dismissible fade show" role="alert">
                     <div
                         t-attf-class="alert #{'alert-success' if request.params.get('stock_notify_status') == 'success' else 'alert-danger'}"
-                        role="alert"
                     >
-                        <t t-esc="request.params.get('stock_notify_message')"/>
+                        <t t-if="request.params.get('stock_notify_status') == 'success'">
+                            <i class="fa fa-check-circle me-2"></i>
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                        </t>
+                        <strong><t t-esc="request.params.get('stock_notify_message')"/></strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </div>
             </t>
-            <t t-set="current_variant" t-value="product.product_variant_id"/>
+            <t t-set="combination_info" t-value="product._get_combination_info_variant() if hasattr(product, '_get_combination_info_variant') else None"/>
+            <t t-set="current_variant" t-value="product if product._name == 'product.product' else (product.product_variant_ids[0] if len(product.product_variant_ids) == 1 else None)"/>
             <t t-if="current_variant and current_variant.qty_available &lt;= 0 and not product.allow_out_of_stock_order">
                 <div class="mt-2">
                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" t-att-data-bs-target="'#stockNotifyModal-%s' % product.id">
@@ -20,29 +28,67 @@
                     </button>
                 </div>
                 <div class="modal fade" t-att-id="'stockNotifyModal-%s' % product.id" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Notify me when back in stock</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-bell me-2"></i>
+                                    Notify me when back in stock
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"/>
                             </div>
-                            <form action="/stock_notify/request" method="post">
+                            <form action="/stock_notify/request" method="post" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
                                 <div class="modal-body">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                     <input type="hidden" name="product_id" t-att-value="current_variant.id"/>
+                                    <input type="hidden" name="product_template_id" t-att-value="product.id"/>
                                     <input type="hidden" name="redirect_url" t-att-value="request.httprequest.path"/>
+                                    
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fa fa-info-circle me-2"></i>
+                                        We'll send you a one-time email when <strong t-esc="product.name"/> is back in stock.
+                                    </div>
+                                    
                                     <div class="mb-3">
-                                        <label class="form-label" for="stock_notify_email">Email</label>
-                                        <input id="stock_notify_email" type="email" name="email" class="form-control" required="required"/>
+                                        <label class="form-label fw-bold" for="stock_notify_email">
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa fa-envelope"/></span>
+                                            <input id="stock_notify_email" 
+                                                   type="email" 
+                                                   name="email" 
+                                                   class="form-control" 
+                                                   placeholder="your.email@example.com"
+                                                   required="required"
+                                                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"/>
+                                        </div>
+                                        <small class="text-muted">We respect your privacy and won't spam you.</small>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label" for="stock_notify_qty">Quantity</label>
-                                        <input id="stock_notify_qty" type="number" name="requested_qty" min="1" step="1" value="1" class="form-control" required="required"/>
+                                        <label class="form-label fw-bold" for="stock_notify_qty">
+                                            Quantity <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa fa-cubes"/></span>
+                                            <input id="stock_notify_qty" 
+                                                   type="number" 
+                                                   name="requested_qty" 
+                                                   min="1" 
+                                                   step="1" 
+                                                   value="1" 
+                                                   class="form-control" 
+                                                   required="required"/>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fa fa-times me-1"></i> Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-paper-plane me-1"></i> Notify Me
+                                    </button>
                                 </div>
                             </form>
                         </div>

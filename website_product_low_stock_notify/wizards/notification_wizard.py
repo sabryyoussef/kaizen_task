@@ -14,12 +14,27 @@ class ProductStockNotificationWizard(models.TransientModel):
     def _validate_input(self):
         self.ensure_one()
         email_clean = (self.email or "").strip()
-        if not email_clean or not tools.single_email_re.fullmatch(email_clean):
-            raise ValidationError(_("Please provide a valid email address."))
+        
+        # Comprehensive email validation
+        if not email_clean:
+            raise ValidationError(_("Email address is required."))
+        
+        if not tools.single_email_re.fullmatch(email_clean):
+            raise ValidationError(_("Please provide a valid email address format."))
+        
+        # Check for common invalid patterns
+        if email_clean.count('@') != 1:
+            raise ValidationError(_("Email must contain exactly one @ symbol."))
+        
+        local, domain = email_clean.rsplit('@', 1)
+        if not local or not domain or '.' not in domain:
+            raise ValidationError(_("Please provide a valid email address with a proper domain."))
+        
         if self.requested_qty <= 0:
             raise ValidationError(_("Quantity must be greater than zero."))
-        if self.product_id.qty_available > 0:
-            raise ValidationError(_("This product is currently in stock."))
+        
+        # Remove the "product already in stock" validation to avoid race conditions
+        # Instead, let the notification system handle it gracefully
 
     def action_submit_request(self):
         self.ensure_one()

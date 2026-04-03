@@ -1,3 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_product_stock_notification_request_user,product.stock.notification.request user,model_product_stock_notification_request,base.group_user,1,1,1,1
+access_product_stock_notification_request_public,product.stock.notification.request public,model_product_stock_notification_request,base.group_public,1,0,1,0
+access_product_stock_notification_request_user,product.stock.notification.request user,model_product_stock_notification_request,base.group_user,1,0,0,0
+access_product_stock_notification_request_manager,product.stock.notification.request manager,model_product_stock_notification_request,sales_team.group_sale_manager,1,1,1,1
+access_product_stock_notification_wizard_public,product.stock.notification.wizard public,model_product_stock_notification_wizard,base.group_public,1,1,1,1
 access_product_stock_notification_wizard_user,product.stock.notification.wizard user,model_product_stock_notification_wizard,base.group_user,1,1,1,1
